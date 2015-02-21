@@ -15,6 +15,14 @@ The server can download and cache files, it provides a minimalist api: http://ho
 ####Client
 A thin wrapper on wget, which aware the Peach server and can download from it directly. When the Env PEACH_SERVER setted, the wrapper will replace url to http://peach_server?file_url=<original_url>, all other params will be passed through to underlying command without any change.
 
+After the installation, wget is super charged:
+```sh
+vagrant@vagrant-ubuntu-trusty-64:~$ wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/13.04/x86_64/chef_12.0.3-1_amd64.deb
+...
+100%[============================================================================================>] 43,799,970  17.4MB/s   in 2.4s
+...
+```
+
 Installation
 ---
 ###Server
@@ -24,7 +32,7 @@ Installation
 vagrant up
 ```
 
-#####Start from scrach
+#####Start from code
 ```sh
 git clone the project
 pip install -r requirements.txt
@@ -32,14 +40,12 @@ python app.py
 ```
 
 ###Client
-Add following in your Vagrantfile
-```sh
-TBD
-```
+Grab the tools folder in the same folder with Vagrantfile, then add following to Vagrantfile shell provision
 
-Or use the following chef cookbook
 ```sh
-TBD
+mkdir -p /etc/peach
+echo {\\"server\\": \\"10.0.2.2:5000\\"} > /etc/peach/conf.json
+echo "export PATH=/vagrant/tools:$PATH" > /etc/profile.d/peach.sh
 ```
 
 Contribution
