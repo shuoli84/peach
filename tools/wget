@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+import os
+import urllib
+import sys
+import subprocess
+import re
+
+cookie = 'b6e063a3e2722969a3880ebf89dcd0972dab9667f7b86350'
+
+# Find the default wget
+paths = os.environ['PATH'].split(':')
+
+wget_path = None
+
+for path in paths:
+    wget_candidate_path = os.path.join(path, 'wget')
+    if os.path.exists(wget_candidate_path):
+        with open(wget_candidate_path, 'r') as f:
+            piece = f.read(1024)
+            if piece.find(cookie) == -1:
+                # Find the wget
+                wget_path = wget_candidate_path
+                break
+
+if wget_path is None:
+    print 'Can not locate wget'
+else:
+    print 'wget located:', wget_path
+
+if __name__ == '__main__':
+    argv = []
+    if 'PEACH_SERVER' in os.environ:
+        peach_host = os.environ['PEACH_SERVER']
+        for param in sys.argv:
+            if re.match('http', param) is not None:
+                argv.append('http://' + peach_host + '?' + urllib.urlencode({"file_url": param}))
+            else:
+                argv.append(param)
+    else:
+        argv = sys.argv
+
+    subprocess.call([wget_path] + argv)
