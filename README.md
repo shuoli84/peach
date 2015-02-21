@@ -1,9 +1,13 @@
+![logo](https://raw.githubusercontent.com/shuoli84/peach/master/logo.png "logo")
 PEACH - lightweight file download cache
 ===
 
 Motivation
 ---
 I am tired of waiting for file downloading again and again while learning and trying chef, vagrant etc. It is even worse when you living in a country with slow internet connection :).
+
+![how it works](https://raw.githubusercontent.com/shuoli84/peach/master/picture.png "How peach help")
+
 
 How it works
 ---
