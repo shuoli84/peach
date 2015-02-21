@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+import json
 import os
 import urllib
 import sys
 import subprocess
 import re
+from os.path import expanduser
 
 cookie = 'b6e063a3e2722969a3880ebf89dcd0972dab9667f7b86350'
 
@@ -28,16 +30,29 @@ if wget_path is None:
 else:
     print 'wget located:', wget_path
 
+def get_peach_server():
+    if 'PEACH_SERVER' in os.environ:
+        return os.environ['PEACH_SERVER'] or None
+
+    for setting_file_path in [expanduser("~/.peach.json"), "/etc/peach/conf.json"]
+        if os.path.exists(setting_file_path):
+            with open(setting_file_path, 'r') as f:
+                setting = json.load(f)
+                if 'server' in setting:
+                    return setting['server']
+    return None
+
 if __name__ == '__main__':
     argv = []
-    if 'PEACH_SERVER' in os.environ:
-        peach_host = os.environ['PEACH_SERVER']
+    peach_server = get_peach_server()
+    if peach_server is not None:
         for param in sys.argv:
             if re.match('http', param) is not None:
-                argv.append('http://' + peach_host + '?' + urllib.urlencode({"file_url": param}))
+                argv.append('http://' + peach_server + '?' + urllib.urlencode({"file_url": param}))
             else:
                 argv.append(param)
     else:
         argv = sys.argv
 
+    print argv
     subprocess.call([wget_path] + argv)
