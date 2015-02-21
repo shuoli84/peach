@@ -52,6 +52,12 @@ echo {\\"server\\": \\"10.0.2.2:5000\\"} > /etc/peach/conf.json
 echo "export PATH=/vagrant/tools:$PATH" > /etc/profile.d/peach.sh
 ```
 
+Then you can try to login and download something
+```sh
+vagrant ssh
+wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/13.04/x86_64/chef_12.0.3-1_amd64.deb -O chef.deb
+```
+
 Contribution
 ---
 Any pull request is welcomed. Or just star the project.
