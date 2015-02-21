@@ -24,7 +24,8 @@ Vagrant.configure(2) do |config|
 
   config.vm.define 'peach-client' do |client|
     client.vm.provision "shell", inline: <<-SHELL
-      echo {\\"server\\": \\"10.0.2.2:5000\\"} > /home/vagrant/.peach.json
+      mkdir -p /etc/peach
+      echo {\\"server\\": \\"10.0.2.2:5000\\"} > /etc/peach/conf.json
       echo "export PATH=/vagrant/tools:$PATH" > /etc/profile.d/peach.sh
     SHELL
   end

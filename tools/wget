@@ -34,7 +34,7 @@ def get_peach_server():
     if 'PEACH_SERVER' in os.environ:
         return os.environ['PEACH_SERVER'] or None
 
-    for setting_file_path in [expanduser("~/.peach.json"), "/etc/peach/conf.json"]
+    for setting_file_path in [expanduser("~/.peach.json"), "/etc/peach/conf.json"]:
         if os.path.exists(setting_file_path):
             with open(setting_file_path, 'r') as f:
                 setting = json.load(f)
