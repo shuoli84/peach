@@ -27,7 +27,8 @@ Any pull request is welcomed
 
 RoadMap
 ---
-wget
-Curl wrapper
-Basic auth
-Other means to download files, e.g, btsync
+1. wget
+2. Curl
+3. vagrant, chef etc framework support
+4. Basic auth
+5. Server side, other means to download files, e.g, btsync
