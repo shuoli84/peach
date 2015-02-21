@@ -7,7 +7,7 @@ import json
 app = Flask(__name__)
 
 proxies = None
-cache_folder = '/tmp/cache'
+cache_folder = '/peach/cache'
 
 if not os.path.exists(cache_folder):
     os.mkdir(cache_folder)
