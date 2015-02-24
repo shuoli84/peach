@@ -33,6 +33,7 @@ Installation
 
 #####Vagrant
 ```sh
+git clone the project
 vagrant up
 ```
 
@@ -44,17 +45,15 @@ python app.py
 ```
 
 ###Client
-Grab the tools folder in the same folder with Vagrantfile, then add following to Vagrantfile shell provision
 
 ```sh
-mkdir -p /etc/peach
-echo {\\"server\\": \\"10.0.2.2:5000\\"} > /etc/peach/conf.json
-echo "export PATH=/vagrant/tools:$PATH" > /etc/profile.d/peach.sh
+vagrant plugin install vagrant-peach
 ```
 
-Then you can try to login and download something
+Then you can try to login and download a file twice to see the download speed boost
 ```sh
 vagrant ssh
+wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/13.04/x86_64/chef_12.0.3-1_amd64.deb -O chef.deb
 wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/13.04/x86_64/chef_12.0.3-1_amd64.deb -O chef.deb
 ```
 

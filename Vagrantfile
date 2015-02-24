@@ -18,16 +18,7 @@ Vagrant.configure(2) do |config|
       cd /peach
       apt-get install -q -y python-pip
       pip install -r requirements.txt
-      python app.py &
+      python app.py >> /peach/log.txt &
     SHELL
   end
-
-  config.vm.define 'peach-client' do |client|
-    client.vm.provision "shell", inline: <<-SHELL
-      mkdir -p /etc/peach
-      echo {\\"server\\": \\"10.0.2.2:5000\\"} > /etc/peach/conf.json
-      echo "export PATH=/vagrant/tools:$PATH" > /etc/profile.d/peach.sh
-    SHELL
-  end
-
 end
