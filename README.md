@@ -23,7 +23,7 @@ After the installation, wget is super charged:
 ```sh
 vagrant@vagrant-ubuntu-trusty-64:~$ wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/13.04/x86_64/chef_12.0.3-1_amd64.deb
 ...
-100%[============================================================================================>] 43,799,970  17.4MB/s   in 2.4s
+100%[=====================...===============================>] 43,799,970  17.4MB/s   in 2.4s
 ...
 ```
 
@@ -46,6 +46,7 @@ python app.py
 
 ###Client
 
+For vagrant users, just use [vagrant-peach](https://github.com/shuoli84/vagrant-peach) plugin.
 ```sh
 vagrant plugin install vagrant-peach
 ```
