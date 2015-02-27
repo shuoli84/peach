@@ -58,6 +58,16 @@ wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/13.04/x86_64/chef_
 wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/13.04/x86_64/chef_12.0.3-1_amd64.deb -O chef.deb
 ```
 
+###Server proxy support
+Edit app.py
+
+```python
+proxies = {
+  "http": "http://<proxyserver>:<port>",
+  "https": "http://<proxyserver>:<port>",
+}
+```
+
 Contribution
 ---
 Any pull request is welcomed. Or just star the project.
