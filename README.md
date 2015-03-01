@@ -46,6 +46,9 @@ python app.py
 
 ###Client
 
+Vagrant
+---
+
 For vagrant users, just use [vagrant-peach](https://github.com/shuoli84/vagrant-peach) plugin.
 ```sh
 vagrant plugin install vagrant-peach
@@ -57,6 +60,21 @@ vagrant ssh
 wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/13.04/x86_64/chef_12.0.3-1_amd64.deb -O chef.deb
 wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/13.04/x86_64/chef_12.0.3-1_amd64.deb -O chef.deb
 ```
+
+Chef
+---
+
+Add chef-peach to berks file
+```
+cookbook "chef-peach", git: "https://github.com/shuoli84/chef-peach"
+```
+Then
+```
+berks upload
+knife node edit node-name
+```
+
+Add chef-peach::default, chef-peach::configure to run list.
 
 ###Server proxy support
 Edit app.py
