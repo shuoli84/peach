@@ -64,7 +64,7 @@ wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/13.04/x86_64/chef_
 Chef
 ---
 
-Add chef-peach to berks file
+Add [chef-peach](https://github.com/shuoli84/chef-peach) to berks file
 ```
 cookbook "chef-peach", git: "https://github.com/shuoli84/chef-peach"
 ```
