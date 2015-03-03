@@ -84,7 +84,8 @@ def index():
         os.mkdir(cache_file_path)
 
     res = requests.get(file_node.url, stream=True, proxies=proxies)
-    res.raise_for_status()
+    if res.status_code >= 400:
+        return Response(status=res.status_code)
 
     headers = dict(res.headers)
     with open(header_file_path, 'w') as f:
