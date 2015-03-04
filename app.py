@@ -39,12 +39,53 @@ def get_file_node(url):
     cache_file_path = os.path.join(cache_folder, hash_code)
     header_file_path = os.path.join(cache_file_path, 'headers.json')
     data_file_path = os.path.join(cache_file_path, 'data')
+
+    for path in [cache_file_path, data_file_path]:
+        if not os.path.exists(path):
+            os.mkdir(path)
+
     succeed_flag_path = os.path.join(cache_file_path, 'succeed')
     return FileNode(url=url, hash=hash_code, cache_file_path=cache_file_path, header_file_path=header_file_path, data_file_path=data_file_path, succeed_flag_path=succeed_flag_path)
 
-def touch(path):
-    with open(path, 'a'):
-        os.utime(path, None)
+def get_downloaded_size(path):
+    current_offset = 0
+    while os.path.exists(os.path.join(path, str(current_offset))):
+        current_offset += os.path.getsize(os.path.join(path, str(current_offset)))
+    return current_offset
+
+def stream_folder(file_path):
+    current_offset = 0
+
+    while os.path.exists(os.path.join(file_path, str(current_offset))):
+        with open(os.path.join(file_path, str(current_offset)), 'rb') as f:
+            app.logger.debug("streaming %s" % os.path.join(file_path, str(current_offset)))
+            chunk = f.read(1024 * 1024)
+            while len(chunk):
+                current_offset += len(chunk)
+                yield chunk
+                chunk = f.read(1024 * 1024)
+
+def stream_folder_then_socket(file_path, socket):
+    current_offset = 0
+
+    app.logger.info("streaming folder[%s] and socket[%s]" % (file_path, socket))
+    for chunk in stream_folder(file_path):
+        current_offset += len(chunk)
+        yield chunk
+
+    if socket is not None:
+        chunk = socket.read(50 * 1024)
+        with open(os.path.join(file_path, str(current_offset)), 'wb') as f:
+            app.logger.debug("writing socket data to %s", os.path.join(file_path, str(current_offset)))
+            while len(chunk) > 0:
+                f.seek(current_offset)
+                f.write(chunk)
+                f.flush()
+                current_offset += len(chunk)
+                yield chunk
+                chunk = socket.read(50 * 1024)
+
+    app.logger.info("streaming folder[%s] and socket[%s] finished" % (file_path, socket))
 
 @app.route('/', methods=['GET'])
 def index():
@@ -54,63 +95,43 @@ def index():
         return Response(status=400)
 
     file_node = get_file_node(file_url)
-    cache_file_path = file_node.cache_file_path
-    header_file_path = file_node.header_file_path
-    data_file_path = file_node.data_file_path
+    res = None # response object when we need download data from network, None if the file is 100% cached
 
-    if os.path.exists(cache_file_path):
-        if os.path.exists(header_file_path) and os.path.exists(data_file_path):
-            with open(header_file_path, 'r') as f:
-                headers = json.load(f)
-                headers.pop('transfer-encoding', None)
-                if 'content-length' in headers:
-                    length = int(headers['content-length'])
-                    file_length = os.path.getsize(data_file_path)
-                    if length < file_length:
-                        pass
+    if os.path.exists(file_node.header_file_path) and os.path.exists(file_node.data_file_path):
+        app.logger.info("Url file node existing")
 
-            def stream_file(file_path):
-                current_offset = 0
+        headers = {}
+        with open(file_node.header_file_path, 'r') as f:
+            headers = json.load(f)
 
-                with open(file_path, 'rb') as f:
-                    chunk = f.read(50 * 1024)
-                    while len(chunk):
-                        yield chunk
-                        chunk = f.read(50 * 1024)
-            return Response(stream_file(data_file_path), headers=headers)
+        file_length = get_downloaded_size(file_node.data_file_path)
+        if int(headers.get('content-length', '0')) > file_length:
+            length = int(headers['content-length'])
+            app.logger.info("Partial file, download rest part")
+            if headers.get('accept-ranges', None) != 'bytes':
+                app.logger.info("Server not supporting range, we have to redownload everything")
+                res = requests.get(file_node.url, stream=True, proxies=proxies)
+            else:
+                app.logger.debug("Server support range")
+                res = requests.get(file_node.url, stream=True, proxies=proxies, headers={
+                    "range": "bytes=%d-" % file_length
+                    })
+    else:
+        app.logger.debug("Fresh url, download it")
+        res = requests.get(file_node.url, stream=True, proxies=proxies)
 
+        headers = dict(res.headers)
+        headers['peach-transfer-encoding'] = headers.pop('transfer-encoding', None)
 
-    if not os.path.exists(cache_file_path):
-        os.mkdir(cache_file_path)
+        with open(file_node.header_file_path, 'w') as f:
+            json.dump(headers, f)
 
-    res = requests.get(file_node.url, stream=True, proxies=proxies)
-    if res.status_code >= 400:
-        return Response(status=res.status_code)
+    if res is not None:
+        if res.status_code >= 400:
+            return Response(status=res.status_code)
 
-    headers = dict(res.headers)
-    with open(header_file_path, 'w') as f:
-        json.dump(headers, f)
-
-    headers.pop('transfer-encoding', None)
-
-    def download_file():
-        current_offset = 0
-
-        chunk = res.raw.read(1024 * 1024)
-        while len(chunk) > 0:
-            with open(data_file_path, 'wb') as f:
-                f.seek(current_offset)
-                f.write(chunk)
-                f.flush()
-                current_offset += len(chunk)
-                yield chunk
-            chunk = res.raw.read(1024 * 1024)
-        touch(file_node.succeed_flag_path)
-
-    return Response(download_file(), headers=headers)
-
+    socket = res.raw if res is not None else None
+    return Response(stream_folder_then_socket(file_node.data_file_path, socket), headers=headers)
 
 if __name__ == '__main__':
     app.run(args.host, port=args.port, debug=args.debug)
-
-
