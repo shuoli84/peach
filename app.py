@@ -6,6 +6,7 @@ import json
 from collections import namedtuple
 import argparse
 import sys
+import urlparse
 
 parser = argparse.ArgumentParser(description='Peach, file download cache server')
 parser.add_argument('--host', default="0.0.0.0", help='Interface the peach server will listen on')
@@ -30,7 +31,7 @@ if not os.path.exists(cache_folder):
     print "Path not exists, please create it first:", cache_folder
     sys.exit(1)
 
-FileNode = namedtuple('FileNode', ['url', 'hash', 'cache_file_path', 'header_file_path', 'data_file_path', 'succeed_flag_path'])
+FileNode = namedtuple('FileNode', ['url', 'hash', 'file_name', 'cache_file_path', 'header_file_path', 'data_file_path', 'succeed_flag_path'])
 
 def get_file_node(url):
     m = hashlib.md5()
@@ -39,13 +40,15 @@ def get_file_node(url):
     cache_file_path = os.path.join(cache_folder, hash_code)
     header_file_path = os.path.join(cache_file_path, 'headers.json')
     data_file_path = os.path.join(cache_file_path, 'data')
+    path = urlparse.urlsplit(url).path
+    file_name = urlparse.urlsplit(url).path.split('/')[-1] or 'index.html'
 
     for path in [cache_file_path, data_file_path]:
         if not os.path.exists(path):
             os.mkdir(path)
 
     succeed_flag_path = os.path.join(cache_file_path, 'succeed')
-    return FileNode(url=url, hash=hash_code, cache_file_path=cache_file_path, header_file_path=header_file_path, data_file_path=data_file_path, succeed_flag_path=succeed_flag_path)
+    return FileNode(url=url, hash=hash_code, file_name=file_name, cache_file_path=cache_file_path, header_file_path=header_file_path, data_file_path=data_file_path, succeed_flag_path=succeed_flag_path)
 
 def get_downloaded_size(path):
     current_offset = 0
@@ -116,6 +119,8 @@ def index():
                 res = requests.get(file_node.url, stream=True, proxies=proxies, headers={
                     "range": "bytes=%d-" % file_length
                     })
+        else:
+            app.logger.info("The whole file is cached, we should just stream it out")
     else:
         app.logger.debug("Fresh url, download it")
         res = requests.get(file_node.url, stream=True, proxies=proxies)
@@ -131,6 +136,9 @@ def index():
             return Response(status=res.status_code)
 
     socket = res.raw if res is not None else None
+
+    if 'content-disposition' not in headers:
+        headers['content-disposition'] = "inline; filename=\"%s\"" % file_node.file_name
     return Response(stream_folder_then_socket(file_node.data_file_path, socket), headers=headers)
 
 if __name__ == '__main__':
