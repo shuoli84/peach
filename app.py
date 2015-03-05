@@ -10,7 +10,7 @@ import urlparse
 
 parser = argparse.ArgumentParser(description='Peach, file download cache server')
 parser.add_argument('--host', default="0.0.0.0", help='Interface the peach server will listen on')
-parser.add_argument('--port', '-p', default=5000, help='port of the peach server')
+parser.add_argument('--port', '-p', default=5000, type=int, help='port of the peach server')
 parser.add_argument('--cache', '-c', default='/var/opt/peach/cache/', help='Path where peach cache downloaded files, default /peach/cache')
 parser.add_argument('--http_proxy', default=None, help='http proxy')
 parser.add_argument('--https_proxy', default=None, help='https proxy')
@@ -81,7 +81,6 @@ def stream_folder_then_socket(file_path, socket):
         with open(os.path.join(file_path, str(current_offset)), 'wb') as f:
             app.logger.debug("writing socket data to %s", os.path.join(file_path, str(current_offset)))
             while len(chunk) > 0:
-                f.seek(current_offset)
                 f.write(chunk)
                 f.flush()
                 current_offset += len(chunk)
