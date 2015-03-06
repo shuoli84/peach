@@ -92,8 +92,8 @@ Any pull request is welcomed. Or just star the project.
 
 RoadMap
 ---
-1. wget
-2. Curl
-3. vagrant, chef etc framework support
+1. wget(done)
+2. Curl(done)
+3. vagrant, chef etc framework support(done)
 4. Basic auth
-5. Server side, other means to download files, e.g, btsync
+5. Server side, other ways to download files, e.g, btsync
