@@ -1,3 +1,7 @@
+Obsoleted
+===
+Awesomeness of docker + docker-registry fully replaced the need of this project. 
+
 ![logo](https://raw.githubusercontent.com/shuoli84/peach/master/logo.png "logo")
 PEACH - lightweight file download cache
 ===
